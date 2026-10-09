@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>片假名(1~15) 競速測驗</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 500px;
+            box-sizing: border-box;
+        }
+        h1 {
+            font-size: 19px;
+            text-align: center;
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .top-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .question-box {
+            text-align: center;
+            margin: 15px 0;
+        }
+        .kana {
+            font-size: 65px;
+            color: #2980b9;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .audio-btn {
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 15px;
+            transition: background 0.2s;
+        }
+        .audio-btn:hover {
+            background-color: #d35400;
+        }
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        button.option-btn {
+            background-color: #ecf0f1;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+            color: #2c3e50;
+            word-break: break-all;
+        }
+        button.option-btn:hover {
+            background-color: #dfe6e9;
+            border-color: #95a5a6;
+        }
+        button.option-btn.correct {
+            background-color: #2ecc71 !important;
+            color: white;
+            border-color: #27ae60;
+        }
+        button.option-btn.wrong {
+            background-color: #e74c3c !important;
+            color: white;
+            border-color: #c0392b;
+        }
+        .result-screen {
+            text-align: center;
+        }
+        .score {
+            font-size: 28px;
+            color: #e67e22;
+            margin: 8px 0;
+            font-weight: bold;
+        }
+        .time-record {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+        .input-group {
+            margin: 15px 0;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+        .input-group input {
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 2px solid #bdc3c7;
+            border-radius: 6px;
+            width: 60%;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .action-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .action-btn:hover {
+            background-color: #2980b9;
+        }
+        .skip-btn {
+            background-color: #95a5a6;
+        }
+        .skip-btn:hover {
+            background-color: #7f8c8d;
+        }
+        .leaderboard-box {
+            margin-top: 15px;
+            text-align: left;
+            background: #fdfefe;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .leaderboard-box h3 {
+            margin: 0 0 6px 0;
+            font-size: 15px;
+            color: #2c3e50;
+            text-align: center;
+        }
+        .leaderboard-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 140px;
+            overflow-y: auto;
+            font-size: 13px;
+        }
+        .leaderboard-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 6px;
+            border-bottom: 1px solid #edf2f7;
+        }
+        .leaderboard-list li:last-child {
+            border-bottom: none;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>片假名(1~15) 競速測驗</h1>
+    
+    <!-- 測驗介面 -->
+    <div id="quiz-screen">
+        <div class="top-info">
+            <span id="timer-text">⏱️ 0秒</span>
+            <span id="progress-text">第 1 題 / 共 15 題</span>
+        </div>
+        <div class="question-box">
+            <p id="question-prompt">請選出以下片假名的正確羅馬拼音：</p>
+            <div class="kana" id="kana-char">ア</div>
+            <button class="audio-btn" onclick="speakCurrentTarget()">🔊 聽發音</button>
+        </div>
+        <div class="options" id="options-container">
+            <!-- 動態生成選項 -->
+        </div>
+    </div>
+
+    <!-- 結果介面 -->
+    <div id="result-screen" class="result-screen hidden">
+        <h2>測驗完成！</h2>
+        <div class="score" id="final-score">你的得分：15 / 15</div>
+        <div class="time-record" id="final-time">總共耗時：0 秒</div>
+        <p id="feedback-text" style="margin: 5px 0 10px 0;">太棒了！完全制霸！</p>
+        
+        <div id="name-input-section">
+            <p style="font-size: 13px; margin-bottom: 6px;">輸入名字記錄成績（或按 Skip 略過）：</p>
+            <div class="input-group">
+                <input type="text" id="player-name" placeholder="請輸入名字 (預設: 匿名)" maxlength="12">
+            </div>
+            <div class="btn-group">
+                <button class="action-btn" onclick="saveScore()">送出成績</button>
+                <button class="action-btn skip-btn" onclick="skipScore()">略過 (Skip)</button>
+            </div>
+        </div>
+
+        <!-- 排行榜區塊 -->
+        <div class="leaderboard-box">
+            <h3>🏆 競速排行榜 (Top 5)</h3>
+            <ul class="leaderboard-list" id="leaderboard-list">
+                <!-- 動態填入排行榜 -->
+            </ul>
+        </div>
+
+        <button class="action-btn" style="width: 100%; margin-top: 15px;" onclick="startQuiz()">再測驗一次</button>
+    </div>
+</div>
+
+<script>
+    // 片假名 1～15 題庫 (ア行、カ行、サ行 共 15 個)
+    const katakanaData = [
+        { target: 'ア', answer: 'a' },
+        { target: 'イ', answer: 'i' },
+        { target: 'ウ', answer: 'u' },
+        { target: 'エ', answer: 'e' },
+        { target: 'オ', answer: 'o' },
+        { target: 'カ', answer: 'ka' },
+        { target: 'キ', answer: 'ki' },
+        { target: 'ク', answer: 'ku' },
+        { target: 'ケ', answer: 'ke' },
+        { target: 'コ', answer: 'ko' },
+        { target: 'サ', answer: 'sa' },
+        { target: 'シ', answer: 'shi' },
+        { target: 'ス', answer: 'su' },
+        { target: 'セ', answer: 'se' },
+        { target: 'ソ', answer: 'so' }
+    ];
+
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let isAnswered = false;
+    
+    let startTime = 0;
+    let elapsedTime = 0;
+    let timerInterval = null;
+
+    function shuffle(array) {
+        let arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function speakText(text) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ja-JP';
+            utterance.rate = 0.8;
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    function speakCurrentTarget() {
+        const current = currentQuestions[currentIndex];
+        if (current) {
+            speakText(current.target);
+        }
+    }
+
+    function startQuiz() {
+        currentQuestions = shuffle(katakanaData);
+        currentIndex = 0;
+        score = 0;
+        
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('name-input-section').classList.remove('hidden');
+        
+        startTime = Date.now();
+        clearInterval(timerInterval);
+        timerInterval = setInterval(updateTimer, 100);
+
+        loadQuestion();
+    }
+
+    function updateTimer() {
+        elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+        document.getElementById('timer-text').innerText = `⏱️ ${elapsedTime}秒`;
+    }
+
+    function loadQuestion() {
+        isAnswered = false;
+        const current = currentQuestions[currentIndex];
+        document.getElementById('progress-text').innerText = `第 ${currentIndex + 1} 題 / 共 ${currentQuestions.length} 題`;
+        document.getElementById('kana-char').innerText = current.target;
+
+        // 產生 3 個錯誤選項 + 1個正確選項
+        let wrongOptions = katakanaData
+            .filter(item => item.answer !== current.answer)
+            .map(item => item.answer);
+        
+        wrongOptions = [...new Set(wrongOptions)];
+        wrongOptions = shuffle(wrongOptions).slice(0, 3);
+        
+        const options = shuffle([current.answer, ...wrongOptions]);
+
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => selectAnswer(btn, opt, current.answer);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function selectAnswer(selectedBtn, selectedOpt, correctOpt) {
+        if (isAnswered) return;
+        isAnswered = true;
+
+        const buttons = document.querySelectorAll('.option-btn');
+        buttons.forEach(btn => {
+            if (btn.innerText === correctOpt) {
+                btn.classList.add('correct');
+            }
+            if (btn === selectedBtn && selectedOpt !== correctOpt) {
+                btn.classList.add('wrong');
+            }
+        });
+
+        if (selectedOpt === correctOpt) {
+            score++;
+        }
+
+        setTimeout(() => {
+            currentIndex++;
+            if (currentIndex < currentQuestions.length) {
+                loadQuestion();
+            } else {
+                clearInterval(timerInterval);
+                showResult();
+            }
+        }, 900);
+    }
+
+    function showResult() {
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+        document.getElementById('final-score').innerText = `你的得分：${score} / ${currentQuestions.length}`;
+        document.getElementById('final-time').innerText = `總共耗時：${elapsedTime} 秒`;
+        
+        let feedback = "繼續加油！多練習幾次就會更熟練喔！";
+        if (score === currentQuestions.length) feedback = "太神啦！片假名 1~15 題完全制霸！";
+        else if (score >= 12) feedback = "非常優秀！表現超級棒！";
+        document.getElementById('feedback-text').innerText = feedback;
+
+        document.getElementById('player-name').value = '';
+        renderLeaderboard();
+    }
+
+    function saveScore() {
+        let name = document.getElementById('player-name').value.trim();
+        if (!name) {
+            name = "匿名挑戰者";
+        }
+        addScoreToStorage(name, score, elapsedTime);
+        document.getElementById('name-input-section').classList.add('hidden');
+        renderLeaderboard();
+    }
+
+    function skipScore() {
+        document.getElementById('name-input-section').classList.add('hidden');
+    }
+
+    function addScoreToStorage(name, userScore, userTime) {
+        let leaderboard = JSON.parse(localStorage.getItem('speed_katakana_1_15')) || [];
+        const now = new Date();
+        const dateStr = `${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        
+        leaderboard.push({ name: name, score: userScore, time: userTime, date: dateStr });
+        
+        // 排序：分數高優先，同分則時間少優先
+        leaderboard.sort((a, b) => {
+            if (b.score !== a.score) {
+                return b.score - a.score;
+            } else {
+                return a.time - b.time;
+            }
+        });
+
+        leaderboard = leaderboard.slice(0, 5);
+        localStorage.setItem('speed_katakana_1_15', JSON.stringify(leaderboard));
+    }
+
+    function renderLeaderboard() {
+        const listEl = document.getElementById('leaderboard-list');
+        listEl.innerHTML = '';
+        let leaderboard = JSON.parse(localStorage.getItem('speed_katakana_1_15')) || [];
+
+        if (leaderboard.length === 0) {
+            listEl.innerHTML = '<li style="text-align: center; color: #a0aec0;">尚無記錄，快來挑戰！</li>';
+            return;
+        }
+
+        leaderboard.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.innerHTML = `<span><strong>#${index+1}</strong> ${item.name} <small style="color:#718096">(${item.date})</small></span> <span style="color:#e67e22; font-weight:bold;">${item.score}分 / ${item.time}秒</span>`;
+            listEl.appendChild(li);
+        });
+    }
+
+    startQuiz();
+</script>
+
+</body>
+</html>
